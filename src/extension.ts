@@ -79,7 +79,18 @@ export async function importKeyMapsSchema(context: vscode.ExtensionContext) {
         intellijDefaults,
         intellijCustoms
     );
-    const keybindings: VSCodeKeybinding[] = syntaxAnalyzer.convert();
+    let keybindings: VSCodeKeybinding[] = syntaxAnalyzer.convert();
+
+    /*---------------------------------------------------------------------
+     * 重複チェックとフィルタリング
+     *-------------------------------------------------------------------*/
+    // VSCodeの既存のキーマップを取得
+    const existingKeybindings = vscode.workspace.getConfiguration('keybindings');
+    
+    // 既存のキーと比較して重複がないものだけ残す
+    keybindings = keybindings.filter(kb => {
+        return !existingKeybindings.some(existingKb => existingKb.key === kb.key && existingKb.command !== kb.command);
+    });
 
     /*---------------------------------------------------------------------
      * Code Generator
